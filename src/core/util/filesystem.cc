@@ -106,7 +106,12 @@ const std::string StringStream::ReadStringFromByte()
   m_Stream.read(reinterpret_cast<char*>(&len), 1);
 
   // Read given amount
+#ifndef _MSC_VER
   char buf[len];
+#else
+  // MSVC doesn't support VLA 
+  char* buf = reinterpret_cast<char*>(alloca(len));
+#endif
   m_Stream.read(reinterpret_cast<char*>(buf), len);
 
   // Return as string
