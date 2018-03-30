@@ -8,3 +8,6 @@
 [submodule "docs"]
 	path = docs
 	url = https://github.com/monero-project/kovri-docs.git
+[submodule "cmake/cotire"]
+	path = cmake/cotire
+	url = https://github.com/sakra/cotire.git
