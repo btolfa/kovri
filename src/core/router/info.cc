@@ -728,7 +728,8 @@ void RouterInfo::CreateBuffer(const PrivateKeys& private_keys)
           m_BufferLen,
           reinterpret_cast<std::uint8_t*>(m_Buffer.get()) + m_BufferLen);
 
-      m_BufferLen += private_keys.GetPublic().GetSignatureLen();
+      // static_cast fixes C4267, the biggest posible value of GetSignatureLen() is 512 for RSASHA5124096
+      m_BufferLen += static_cast<std::uint16_t>(private_keys.GetPublic().GetSignatureLen());
     }
   catch (...)
     {
