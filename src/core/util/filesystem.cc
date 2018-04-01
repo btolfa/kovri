@@ -80,7 +80,9 @@ StringStream::ReadKeyPair()
 
   // Read key
   std::string key(ReadStringFromByte());
-  read_size += key.size();
+  // static_cast fixes C4267, it is safe to cast because ReadStringFromByte()
+  // returns string less or equal 255 chars
+  read_size += static_cast<std::uint16_t>(key.size());
 
   // Skip delimiter
   read_size++;
@@ -89,7 +91,9 @@ StringStream::ReadKeyPair()
 
   // Read value
   std::string value(ReadStringFromByte());
-  read_size += value.size();
+  // static_cast fixes C4267, it is safe to cast because ReadStringFromByte()
+  // returns string less or equal 255 chars
+  read_size += static_cast<std::uint16_t>(value.size());
 
   // Skip terminator
   read_size++;
