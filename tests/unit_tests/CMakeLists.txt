@@ -28,8 +28,13 @@ find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
 target_link_libraries(kovri-tests PRIVATE 
   Boost::unit_test_framework
-  kovri-client
-  kovri-private)
+  kovri-private
+  kovri-client)
+
+if (COMMAND cotire)
+  set_target_properties(kovri-tests PROPERTIES COTIRE_PREFIX_HEADER_INCLUDE_PATH "${CMAKE_SOURCE_DIR}/deps")
+  cotire(kovri-tests)
+endif()
 
 install(TARGETS kovri-tests RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}) 
 
