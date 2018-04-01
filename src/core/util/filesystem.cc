@@ -110,7 +110,7 @@ std::string StringStream::ReadStringFromByte()
   std::string string(len, '\0');
 
   // Read given amount
-  m_Stream.read(const_cast<char*>(string.data()), string.size());
+  m_Stream.read(const_cast<char*>(string.data()), len);
 
   return string;
 }
