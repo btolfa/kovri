@@ -539,8 +539,9 @@ void SSUData::HandleResendTimer(
               }
             }
           it->second->num_resends++;
+          // static_cast fixes C4267 warning. The bigest value of num_resends is MaxResends. It's safe to cast.
           it->second->next_resend_time
-             += it->second->num_resends * SSUDuration::ResendInterval;
+             += static_cast<std::uint32_t>(it->second->num_resends) * SSUDuration::ResendInterval;
           it++;
         } else {
           LOG(error)
