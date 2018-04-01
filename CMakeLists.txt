@@ -58,6 +58,7 @@ option(WITH_SUPERCOP   "Build Ed25519 using the ref10 implementation from SUPERC
 option(WITH_TESTS      "Build unit tests" OFF)
 option(WITH_FUZZ_TESTS "Build fuzz tests" OFF)
 option(WITH_UPNP       "Include support for UPnP client" OFF)
+option(WITH_COTIRE     "Enable cotire (compile time reducer) - precompiled header and single compilation unit builds" ${MSVC})
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cotire/CMake)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -202,6 +203,20 @@ if(WITH_STATIC)
   endif()
 endif()
 
+# Speed up MSVC build
+# https://blogs.msdn.microsoft.com/vcblog/2016/10/26/recommendations-to-speed-c-builds-in-visual-studio/
+if (MSVC) 
+  set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /DEBUG:fastlink") 
+  if (NOT WITH_COTIRE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+  endif()
+endif()
+
+if(WITH_COTIRE)
+  set(COTIRE_PCH_MEMORY_SCALING_FACTOR "300")
+  include(cotire OPTIONAL)
+endif() 
+
 # Get uname output
 function(Uname output pattern)
   execute_process(
@@ -334,16 +349,6 @@ if (WITH_PYTHON)
   endif()
 endif()
 
-# Speed up MSVC build
-# https://blogs.msdn.microsoft.com/vcblog/2016/10/26/recommendations-to-speed-c-builds-in-visual-studio/
-if (MSVC) 
-  set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /DEBUG:fastlink") 
-  # The /MP flag is applied by cotire
-  # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-  
-  set(COTIRE_PCH_MEMORY_SCALING_FACTOR "300")
-  include(cotire)
-endif() 
 
 # Load remaining includes
 target_include_directories(kovri-private INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
