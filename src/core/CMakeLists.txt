@@ -191,7 +191,8 @@ if(WITH_SUPERCOP)
     ${EDDSA_DIR}/ed25519/sqrtm1.h)
 endif()
 
-if (MSVC)
+if (COMMAND cotire)
+  set_target_properties(kovri-core PROPERTIES COTIRE_PREFIX_HEADER_INCLUDE_PATH "${CMAKE_SOURCE_DIR}/deps")
   cotire(kovri-core)
 endif()
 
