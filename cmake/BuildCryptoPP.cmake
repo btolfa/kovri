@@ -116,7 +116,7 @@ else()
     PATCH_COMMAND ${SED_COMMAND} -i "${SED_ARGS_RELEASE}" ${VCXPROJ}
     COMMAND ${SED_COMMAND} -i "${SED_ARGS_DEBUG}" ${VCXPROJ}
     CONFIGURE_COMMAND ""
-    BUILD_COMMAND ${MSBUILD_COMMAND} /t:Build /p:Configuration=$<CONFIG> /p:Platform=${PLATFORM} ${CRYPTOPP_ROOT}/cryptlib.vcxproj
+    BUILD_COMMAND ${MSBUILD_COMMAND} /verbosity:m /t:Build /p:Configuration=$<CONFIG> /p:Platform=${PLATFORM} ${CRYPTOPP_ROOT}/cryptlib.vcxproj
     BUILD_BYPRODUCTS 
       ${CRYPTOPP_ROOT}/${PLATFORM}/Output/Debug/cryptlib.lib
       ${CRYPTOPP_ROOT}/${PLATFORM}/Output/Release/cryptlib.lib
