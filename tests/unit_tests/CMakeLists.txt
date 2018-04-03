@@ -23,6 +23,7 @@ add_executable(kovri-tests
   main.cc
   core/router/identity.h)
 
+set_property(SOURCE main.cc PROPERTY COTIRE_EXCLUDED TRUE)
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
