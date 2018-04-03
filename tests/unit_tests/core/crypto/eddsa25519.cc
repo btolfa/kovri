@@ -30,8 +30,6 @@
  * Parts of the project are originally copyright (c) 2013-2015 The PurpleI2P Project          //
  */
 
-#define BOOST_TEST_DYN_LINK
-
 #include <boost/test/unit_test.hpp>
 
 #include "core/crypto/signature.h"
