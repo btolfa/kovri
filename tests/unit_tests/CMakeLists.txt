@@ -33,6 +33,8 @@ target_link_libraries(kovri-tests PRIVATE
   kovri-private
   kovri-client)
 
+target_compile_definitions(kovri-tests PRIVATE BOOST_TEST_DYN_LINK)
+
 if (COMMAND cotire)
   set_target_properties(kovri-tests PROPERTIES COTIRE_PREFIX_HEADER_INCLUDE_PATH "${CMAKE_SOURCE_DIR}/deps")
   cotire(kovri-tests)
