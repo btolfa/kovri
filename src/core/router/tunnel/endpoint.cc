@@ -96,7 +96,7 @@ void TunnelEndpoint::HandleDecryptedTunnelDataMsg(
       bool is_follow_on_fragment = flag & 0x80,
                is_last_fragment = true;
       std::uint32_t msg_ID = 0;
-      int fragment_num = 0;
+      std::uint8_t fragment_num = 0;
       TunnelMessageBlockEx m;
       if (!is_follow_on_fragment) {
         // first fragment
