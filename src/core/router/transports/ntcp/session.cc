@@ -931,8 +931,8 @@ void NTCPSession::SendPayload(
 boost::asio::const_buffers_1 NTCPSession::CreateMsgBuffer(
     std::shared_ptr<I2NPMessage> msg) {
   std::uint8_t* send_buffer;
-  // TODO(anonimal): no signed integers
-  int len{}, encrypted_len{};
+  std::uint16_t len{};
+  std::uint16_t encrypted_len{};
   // TODO(anonimal): this try block should be handled entirely by caller
   try {
     if (msg) {
