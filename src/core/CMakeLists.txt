@@ -193,7 +193,10 @@ if(WITH_SUPERCOP)
   # Disable unity build for eddsa files
   foreach(eddsa_file IN LISTS EDDSA_SRC)
     set_property(SOURCE ${eddsa_file} PROPERTY COTIRE_EXCLUDED TRUE)
+    set_property(SOURCE ${eddsa_file} PROPERTY COMPILE_OPTIONS $<$<CXX_COMPILER_ID:MSVC>:/wd4244>)
   endforeach()
+
+  set_property(SOURCE ${EDDSA_DIR}/ed25519/fe_cmov.cc APPEND PROPERTY COMPILE_OPTIONS $<$<CXX_COMPILER_ID:MSVC>:/wd4146>)
   
   target_sources(kovri-core PRIVATE ${EDDSA_SRC})
 endif()
