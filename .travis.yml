@@ -1,0 +1,215 @@
+language: cpp
+os: linux # Jobs are on Linux unless specified otherwise
+dist: trusty # Jobs are on Trusty unless specified otherwise
+sudo: false
+
+env:
+  global:
+    - DEPS_DIR=${TRAVIS_BUILD_DIR}/deps
+
+matrix:
+  include:
+    - os: osx
+      osx_image: xcode9.3
+      env: ALL_OPTIONS=OFF WITH_TESTS=OFF WITH_STATIC=ON CONFIGURATION=Release
+      compiler: clang
+    
+    # clang 5 + Boost 1.67 + Debug
+    - env: COMPILER=clang++-5.0 ALL_OPTIONS=OFF WITH_TESTS=OFF WITH_STATIC=ON CONFIGURATION=Debug BOOST_VERSION="1.67.0"
+      compiler: clang
+      addons: &clang { apt: { sources: ["ubuntu-toolchain-r-test", "llvm-toolchain-trusty-5.0"], packages: [ "clang-5.0", "libssl-dev", "libssl1.0.0", "libminiupnpc-dev" ] } } 
+
+    # clang 5 + Boost 1.67 + Debug
+    - env: COMPILER=clang++-5.0 ALL_OPTIONS=OFF WITH_TESTS=ON WITH_STATIC=OFF CONFIGURATION=Debug BOOST_VERSION="1.67.0"
+      compiler: clang
+      addons: *clang 
+
+    - env: COMPILER=clang++-5.0 ALL_OPTIONS=ON WITH_TESTS=OFF WITH_STATIC=OFF CONFIGURATION=Debug BOOST_VERSION="1.67.0"
+      compiler: clang
+      addons: *clang 
+
+    - env: COMPILER=clang++-5.0 ALL_OPTIONS=ON WITH_TESTS=OFF WITH_STATIC=OFF CONFIGURATION=Release BOOST_VERSION="1.67.0"
+      compiler: clang
+      addons: *clang 
+
+    # xcode 9.3 + Debug
+    - os: osx
+      env: ALL_OPTIONS=OFF WITH_TESTS=OFF WITH_STATIC=ON CONFIGURATION=Debug
+      osx_image: xcode9.3
+      compiler: clang
+
+    # gcc 7 + Boost 1.67 + Debug
+    - env: COMPILER=g++-7 ALL_OPTIONS=OFF WITH_TESTS=OFF WITH_STATIC=ON CONFIGURATION=Debug BOOST_VERSION="1.67.0"
+      addons: &gcc7 { apt: { sources: ["ubuntu-toolchain-r-test"], packages: ["g++-7",  "libssl-dev", "libssl1.0.0", "libminiupnpc-dev" ] } } 
+      
+    # gcc 4.9 + Boost 1.58 + Debug
+    - env: COMPILER=g++-4.9 ALL_OPTIONS=OFF WITH_TESTS=OFF WITH_STATIC=ON CONFIGURATION=Debug 
+      addons: &gcc49 { apt: { sources: ["ubuntu-toolchain-r-test", sourceline: 'ppa:kojoley/boost' ], packages: ["g++-4.9", "libboost-chrono1.58-dev", "libboost-log1.58-dev", "libboost-program-options1.58-dev", "libboost-date-time1.58-dev", "libboost-thread1.58-dev", "libboost-system1.58-dev", "libboost-filesystem1.58-dev", "libboost-regex1.58-dev", "libboost-test1.58-dev", "libssl-dev", "libssl1.0.0", "libminiupnpc-dev" ] } } 
+
+      
+    # gcc 4.9 + Boost 1.58 + Debug
+    - env: COMPILER=g++-4.9 ALL_OPTIONS=OFF WITH_TESTS=ON WITH_STATIC=OFF CONFIGURATION=Debug 
+      addons: *gcc49 
+
+    - env: COMPILER=g++-4.9 ALL_OPTIONS=ON WITH_TESTS=OFF WITH_STATIC=OFF CONFIGURATION=Debug 
+      addons: *gcc49 
+
+    # gcc 7 + Boost 1.67 + Debug
+    - env: COMPILER=g++-7 ALL_OPTIONS=OFF WITH_TESTS=ON WITH_STATIC=OFF CONFIGURATION=Debug BOOST_VERSION="1.67.0"
+      addons: *gcc7
+
+    - env: COMPILER=g++-7 ALL_OPTIONS=ON WITH_TESTS=OFF WITH_STATIC=OFF CONFIGURATION=Debug BOOST_VERSION="1.67.0"
+      addons: *gcc7
+
+    # gcc 7 + Boost 1.67 + Release
+    - env: COMPILER=g++-7 ALL_OPTIONS=ON WITH_TESTS=OFF WITH_STATIC=OFF CONFIGURATION=Release BOOST_VERSION="1.67.0"
+      addons: *gcc7
+
+    - env: COMPILER=g++-7 ALL_OPTIONS=OFF WITH_TESTS=OFF WITH_STATIC=ON CONFIGURATION=Release BOOST_VERSION="1.67.0"
+      addons: *gcc7
+
+    # clang 5 + Boost 1.67 + Release
+    - env: COMPILER=clang++-5.0 ALL_OPTIONS=OFF WITH_TESTS=OFF WITH_STATIC=ON CONFIGURATION=Release BOOST_VERSION="1.67.0"
+      compiler: clang
+      addons: *clang 
+
+    # xcode 7.3 + Debug
+    - os: osx
+      osx_image: xcode7.3
+      env: ALL_OPTIONS=ON WITH_TESTS=OFF WITH_STATIC=OFF CONFIGURATION=Debug
+      compiler: clang
+      
+    - os: osx
+      osx_image: xcode7.3
+      env: ALL_OPTIONS=OFF WITH_TESTS=ON WITH_STATIC=OFF CONFIGURATION=Debug
+      compiler: clang
+
+    - os: osx
+      osx_image: xcode7.3
+      env: ALL_OPTIONS=OFF WITH_TESTS=OFF WITH_STATIC=ON CONFIGURATION=Debug
+      compiler: clang
+
+    # xcode 9.3 + Debug
+    - os: osx
+      osx_image: xcode9.3
+      env: ALL_OPTIONS=OFF WITH_TESTS=ON WITH_STATIC=OFF CONFIGURATION=Debug
+      compiler: clang
+
+    - os: osx
+      osx_image: xcode9.3
+      env: ALL_OPTIONS=ON WITH_TESTS=OFF WITH_STATIC=OFF CONFIGURATION=Debug
+      compiler: clang
+
+    # xcode 9.3 + Release
+    - os: osx
+      osx_image: xcode9.3
+      env: ALL_OPTIONS=ON WITH_TESTS=OFF WITH_STATIC=OFF CONFIGURATION=Release
+      compiler: clang
+
+install:
+  # override CXX set by Travis if needed
+  - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi
+  - ${CXX} --version
+
+  # OSX dependencies
+  - |
+    if [[ ${TRAVIS_OS_NAME} == "osx" ]]; then
+      brew update
+      # build tools
+      brew install cmake || brew upgrade cmake
+      brew install ninja || brew upgrade ninja
+      brew install ccache || brew upgrade ccache
+      # build dependencies
+      brew install boost || brew upgrade boost
+      brew install openssl || brew upgrade openssl
+      brew install miniupnpc || brew upgrade miniupnpc 
+    fi
+
+  # Install a recent CMake
+  - |
+    if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
+      CMAKE_VERSION=3.11.1
+      CMAKE_URL="https://cmake.org/files/v${CMAKE_VERSION%.[0-9]}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" 
+      mkdir -p ${DEPS_DIR}/cmake
+      travis_retry wget --no-check-certificate -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C ${DEPS_DIR}/cmake 
+      export PATH=${DEPS_DIR}/cmake/bin:${PATH}
+    fi
+  - cmake --version
+  
+  # Install recent ninja-build 
+  - |
+    if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
+      NINJA_VERSION=1.8.2 
+      NINJA_URL="https://github.com/ninja-build/ninja/releases/download/v${NINJA_VERSION}/ninja-linux.zip" 
+      mkdir -p ${DEPS_DIR}/bin
+      travis_retry wget --no-check-certificate -O ${DEPS_DIR}/ninja.zip ${NINJA_URL}
+      cmake -E chdir ${DEPS_DIR}/bin cmake -E tar xf ${DEPS_DIR}/ninja.zip
+      chmod +x ${DEPS_DIR}/bin/ninja 
+      export PATH=${DEPS_DIR}/bin:${PATH} 
+    fi
+  - ninja --version
+
+  # Install libc++ and libc++abi if needed
+  - |
+    if [[ "${CXX}" == "clang++-5.0" && "${TRAVIS_OS_NAME}" == "linux" ]]; then
+      VERSION="${CXX##*-}"
+      LIBCXX_URL="https://github.com/btolfa/boost4travis/releases/download/6/libcxx-for-clang-${VERSION//\./_}.7z"
+      travis_retry wget --no-check-certificate -O ${DEPS_DIR}/libcxx.7z $LIBCXX_URL
+      cmake -E chdir ${DEPS_DIR} cmake -E tar xf ${DEPS_DIR}/libcxx.7z
+
+      export CXXFLAGS="-nostdinc++ -isystem ${DEPS_DIR}/llvm/install/include/c++/v1"
+      export LDFLAGS="-stdlib=libc++ -L ${DEPS_DIR}/llvm/install/lib -l c++ -l c++abi"
+      export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${DEPS_DIR}/llvm/install/lib"
+    fi
+
+  # Download and install Boost
+  - |
+    if [[ ${TRAVIS_OS_NAME} == "linux" && "${BOOST_VERSION}" != "" ]]; then
+      COMP="${CXX%%+*}"
+      if [[ "${COMP}" == "g" ]]; then
+        COMP="gcc"
+      fi
+      VERSION="${CXX##*-}"
+      BOOST_URL="https://github.com/btolfa/boost4travis/releases/download/6/boost-${BOOST_VERSION//\./_}-${COMP}-${VERSION//\./_}.7z"
+      travis_retry wget --no-check-certificate -O ${DEPS_DIR}/boost.7z $BOOST_URL
+      cmake -E chdir ${DEPS_DIR} cmake -E tar xf ${DEPS_DIR}/boost.7z
+      export BOOST_ROOT="${DEPS_DIR}/boost"
+    fi
+
+  # Download and install ccache
+  - |
+    if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
+      mkdir -p ${DEPS_DIR}/ccache
+      CCACHE_URL="https://www.samba.org/ftp/ccache/ccache-3.4.2.tar.xz"
+      travis_retry wget -O - ${CCACHE_URL} | tar --strip-components=1 -xJ -C ${DEPS_DIR}/ccache || exit 1
+
+      COMP="${CXX%%+*}"
+      if [[ "${COMP}" == "g" ]]; then
+        COMP="gcc"
+      fi
+      VERSION="${CXX##*-}"
+      export CC="$COMP-$VERSION"
+
+      cmake -E chdir ${DEPS_DIR}/ccache ./configure --prefix=${DEPS_DIR}
+      cmake -E chdir ${DEPS_DIR}/ccache make install -j2
+    fi
+
+before_script:
+  - mkdir -p ${TRAVIS_BUILD_DIR}/build
+  - cmake -E chdir ${TRAVIS_BUILD_DIR}/build cmake -G Ninja -D BUILD_CRYPTOPP=ON -D WITH_COTIRE=ON -D WITH_KOVRI_UTIL=ON -D COTIRE_MAXIMUM_NUMBER_OF_UNITY_INCLUDES=-j1 -D CMAKE_VERBOSE_MAKEFILE=${VERBOSE:-OFF} -D CMAKE_BUILD_TYPE=${CONFIGURATION} -D WITH_OPTIMIZE=${ALL_OPTIONS} -D WITH_HARDENING=${ALL_OPTIONS} -D WITH_UPNP=${ALL_OPTIONS} -D WITH_STATIC=${WITH_STATIC} -D WITH_STATIC_DEPS=${WITH_STATIC} -D WITH_TESTS=${WITH_TESTS} ${TRAVIS_BUILD_DIR} 
+
+script:
+  - cmake --build ${TRAVIS_BUILD_DIR}/build --target all_unity -- -j1
+
+  # Check static build
+  - |
+    if [[ "$WITH_STATIC" == "ON" ]]; then
+      if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
+        ldd ${TRAVIS_BUILD_DIR}/build/unity/kovri
+        ldd ${TRAVIS_BUILD_DIR}/build/unity/kovri-util
+      else
+        otool -L ${TRAVIS_BUILD_DIR}/build/unity/kovri
+        otool -L ${TRAVIS_BUILD_DIR}/build/unity/kovri-util
+      fi
+    fi
+    
