@@ -615,7 +615,7 @@ void GarlicDestination::HandleGarlicPayload(
     LOG(debug) << "GarlicDestination: garlic payload offset=" << offset;
 
     // Sanity test
-    if ((buf + offset) - buf1 > static_cast<int>(len))
+    if ((buf + offset) - buf1 > static_cast<std::ptrdiff_t>(len))
       // TODO(anonimal): in this case, do we want to throw out the entire payload? If not, don't throw.
       throw std::runtime_error("GarlicDestination: clove is too long");
 
