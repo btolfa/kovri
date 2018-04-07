@@ -148,7 +148,7 @@ bool GarlicRoutingSession::CleanupExpiredTags() {
     if (ts >= it->creation_time + OUTGOING_TAGS_EXPIRATION_TIMEOUT)
       it = m_SessionTags.erase(it);
     else
-      it++;
+      ++it;
   }
   // delete expired unconfirmed tags
   for (auto it = m_UnconfirmedTagsMsgs.begin();
