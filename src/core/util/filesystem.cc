@@ -66,11 +66,11 @@ StringStream::StringStream(std::string& stream)
 }
 
 StringStream::StringStream(
-    const std::string& delimiter,
-    const std::string& terminator)
+    std::string delimiter,
+    std::string terminator)
+  : m_Delimiter(std::move(delimiter)),
+    m_Terminator(std::move(terminator))
 {
-  m_Delimiter = delimiter;
-  m_Terminator = terminator;
 }
 
 std::tuple<std::string, std::string, std::size_t>
