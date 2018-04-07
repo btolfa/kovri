@@ -316,7 +316,7 @@ struct I2NPMessage {
   void RenewI2NPMessageHeader();
 };
 
-template<int SZ>
+template<std::size_t SZ>
 struct I2NPMessageBuffer : public I2NPMessage {
   I2NPMessageBuffer() {
     buf = m_Buffer;
