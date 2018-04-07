@@ -63,7 +63,7 @@ class StringStream {
   StringStream(std::string& stream);
 
   /// @brief Stream to write to using specified delimiter and terminator
-  StringStream(const std::string& delimiter, const std::string& terminator);
+  StringStream(std::string delimiter, std::string terminator);
 
   template <typename SizeCast = std::size_t, typename Buffer, typename Size>
   void Read(Buffer* buf, Size&& size)
