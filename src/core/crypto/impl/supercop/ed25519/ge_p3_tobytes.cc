@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "ge.h"
 
 void ge_p3_tobytes(unsigned char *s,const ge_p3 *h)

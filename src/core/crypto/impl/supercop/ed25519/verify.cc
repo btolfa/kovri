@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "crypto_verify_32.h"
 
 int crypto_verify_32(const unsigned char *x,const unsigned char *y)
