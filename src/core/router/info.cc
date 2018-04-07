@@ -631,7 +631,7 @@ bool RouterInfo::RemoveIntroducer(
         {
           for (std::vector<Introducer>::iterator it = addr.introducers.begin();
                it != addr.introducers.end();
-               it++)
+               ++it)
             if (boost::asio::ip::udp::endpoint(it->host, it->port) == endpoint)
               {
                 addr.introducers.erase(it);
