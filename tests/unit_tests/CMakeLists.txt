@@ -37,8 +37,17 @@ target_compile_definitions(kovri-tests PRIVATE BOOST_TEST_DYN_LINK)
 if (COMMAND cotire)
   set_target_properties(kovri-tests PROPERTIES COTIRE_PREFIX_HEADER_INCLUDE_PATH "${CMAKE_SOURCE_DIR}/deps")
   cotire(kovri-tests)
+
+  add_test(NAME KovriTest COMMAND kovri-tests_unity)
+else()
+  add_test(NAME KovriTest COMMAND kovri-tests)
+endif()
+
+if (MSVC AND NOT WITH_STATIC)
+  file(TO_NATIVE_PATH "${Boost_LIBRARY_DIRS}" BOOST_DLL_DIR)
+  file(TO_NATIVE_PATH "${OPENSSL_ROOT_DIR}/bin" OPENSSL_DLL_DIR)
+  set_property(TEST KovriTest PROPERTY ENVIRONMENT "PATH=%PATH%\;${BOOST_DLL_DIR}\;${OPENSSL_DLL_DIR}")
 endif()
 
 install(TARGETS kovri-tests RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}) 
 
-add_test(NAME KovriTest COMMAND kovri-tests)
