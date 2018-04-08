@@ -79,8 +79,8 @@ const std::uint8_t CERTIFICATE_TYPE_KEY = 5;
 std::string GetCertificateTypeName(std::uint8_t type);
 
 struct Identity {
-  std::uint8_t public_key[256];
-  std::uint8_t signing_key[128];
+  std::uint8_t public_key[256] = {};
+  std::uint8_t signing_key[128] = {};
 
   struct {
     std::uint8_t type;
@@ -266,9 +266,9 @@ class PrivateKeys {  // for eepsites
 
  private:
   IdentityEx m_Public;
-  std::uint8_t m_PrivateKey[256];
+  std::uint8_t m_PrivateKey[256] = {};
   // assume private key doesn't exceed 1024 bytes
-  std::uint8_t m_SigningPrivateKey[1024];
+  std::uint8_t m_SigningPrivateKey[1024] = {};
   std::unique_ptr<kovri::core::Signer> m_Signer;
 };
 
