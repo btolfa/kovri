@@ -302,8 +302,8 @@ XORMetric operator^(
 // destination for delivery instructions
 class RoutingDestination {
  public:
-  RoutingDestination() {}
-  virtual ~RoutingDestination() {}
+  RoutingDestination() = default;
+  virtual ~RoutingDestination() = default;
 
   virtual const IdentHash& GetIdentHash() const = 0;
 
@@ -325,7 +325,7 @@ class RoutingDestination {
 
 class LocalDestination {
  public:
-  virtual ~LocalDestination() {}
+  virtual ~LocalDestination() = default;
 
   virtual const PrivateKeys& GetPrivateKeys() const = 0;
 
