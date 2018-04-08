@@ -47,14 +47,6 @@
 namespace kovri {
 namespace core {
 
-StringStream::StringStream()
-{
-}
-
-StringStream::~StringStream()
-{
-}
-
 StringStream::StringStream(const std::string& stream)
 {
   m_Stream.str(stream);

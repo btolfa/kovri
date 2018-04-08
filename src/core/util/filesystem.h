@@ -53,8 +53,8 @@ namespace core {
 /// @param String to be treated as stream
 class StringStream {
  public:
-  StringStream();
-  ~StringStream();
+  StringStream() = default;
+  ~StringStream() = default;
 
   /// @brief Stream to read from
   StringStream(const std::string& stream);
