@@ -56,6 +56,8 @@ if (MSVC AND NOT WITH_STATIC)
       set_property(TARGET kovri-tests_unity PROPERTY VS_USER_PROPS "${CMAKE_CURRENT_BINARY_DIR}/custom.user.props")
     endif()
   endif()
+
+  set_directory_properties(PROPERTIES VS_STARTUP_PROJECT ${tests_target})
 endif()
 
 install(TARGETS kovri-tests RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}) 
