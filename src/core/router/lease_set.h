@@ -80,12 +80,11 @@ class LeaseSet : public RoutingDestination {
   }
 
   const std::uint8_t* GetBuffer() const {
-    const auto buf = m_Buffer.get();
-    return buf;
+    return m_Buffer.data();
   }
 
   std::size_t GetBufferLen() const {
-    return m_BufferLen;
+    return m_Buffer.size();
   }
 
   bool IsValid() const {
@@ -124,8 +123,7 @@ class LeaseSet : public RoutingDestination {
   std::vector<Lease> m_Leases;
   IdentityEx m_Identity;
   std::array<std::uint8_t, 256> m_EncryptionKey;
-  std::unique_ptr<std::uint8_t[]> m_Buffer;
-  std::size_t m_BufferLen;
+  std::vector<std::uint8_t> m_Buffer;
 };
 
 }  // namespace core

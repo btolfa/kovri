@@ -50,47 +50,44 @@ namespace core {
 LeaseSet::LeaseSet(
     const std::uint8_t* buf,
     std::size_t len)
-    : m_IsValid(true) {
-  m_Buffer = std::make_unique<std::uint8_t[]>(len);
-  memcpy(m_Buffer.get(), buf, len);
-  m_BufferLen = len;
+    : m_IsValid(true),
+      m_Buffer{buf, buf + len} {
   ReadFromBuffer();
 }
 
 LeaseSet::LeaseSet(
     const kovri::core::TunnelPool& pool)
-    : m_IsValid(true) {
+    : m_IsValid(true),
+      m_Buffer(MAX_LS_BUFFER_SIZE)
+{
   // header
   const kovri::core::LocalDestination* local_destination = pool.GetLocalDestination();
   if (!local_destination) {
-    m_Buffer.reset(nullptr);
-    m_BufferLen = 0;
     m_IsValid = false;
     LOG(error) << "LeaseSet: destination for local LeaseSet doesn't exist";
     return;
   }
-  m_Buffer = std::make_unique<std::uint8_t[]>(MAX_LS_BUFFER_SIZE);
-  m_BufferLen = local_destination->GetIdentity().ToBuffer(
-      m_Buffer.get(),
+  std::size_t buffer_len = local_destination->GetIdentity().ToBuffer(
+      m_Buffer.data(),
       MAX_LS_BUFFER_SIZE);
   memcpy(
-      m_Buffer.get() + m_BufferLen,
+      m_Buffer.data() + buffer_len,
       local_destination->GetEncryptionPublicKey(),
       256);
-  m_BufferLen += 256;
-  auto signing_key_len = local_destination->GetIdentity().GetSigningPublicKeyLen();
-  memset(m_Buffer.get() + m_BufferLen, 0, signing_key_len);
-  m_BufferLen += signing_key_len;
+  buffer_len += 256;
+  const auto signing_key_len = local_destination->GetIdentity().GetSigningPublicKeyLen();
+  memset(m_Buffer.data() + buffer_len, 0, signing_key_len);
+  buffer_len += signing_key_len;
   auto tunnels = pool.GetInboundTunnels(5);  // 5 tunnels maximum
-  m_Buffer[m_BufferLen] = tunnels.size();  // num leases
-  m_BufferLen++;
+  m_Buffer[buffer_len] = tunnels.size();  // num leases
+  buffer_len++;
   // leases
   for (auto it : tunnels) {
-    memcpy(m_Buffer.get() + m_BufferLen, it->GetNextIdentHash(), 32);
-    m_BufferLen += 32;  // gateway id
+    memcpy(m_Buffer.data() + buffer_len, it->GetNextIdentHash(), 32);
+    buffer_len += 32;  // gateway id
     core::OutputByteStream::Write<std::uint32_t>(
-        m_Buffer.get() + m_BufferLen, it->GetNextTunnelID());
-    m_BufferLen += 4;  // tunnel id
+        m_Buffer.data() + buffer_len, it->GetNextTunnelID());
+    buffer_len += 4;  // tunnel id
     std::uint64_t ts =
       it->GetCreationTime() +
       kovri::core::TUNNEL_EXPIRATION_TIMEOUT -
@@ -98,17 +95,19 @@ LeaseSet::LeaseSet(
     ts *= 1000;  // in milliseconds
     ts += kovri::core::RandInRange32(0, 5);  // + random milliseconds
     core::OutputByteStream::Write<std::uint64_t>(
-        m_Buffer.get() + m_BufferLen, ts);
-    m_BufferLen += 8;  // end date
+        m_Buffer.data() + buffer_len, ts);
+    buffer_len += 8;  // end date
   }
   // signature
   local_destination->Sign(
-      m_Buffer.get(),
-      m_BufferLen,
-      m_Buffer.get() + m_BufferLen);
-  m_BufferLen += local_destination->GetIdentity().GetSignatureLen();
+      m_Buffer.data(),
+      buffer_len,
+      m_Buffer.data() + buffer_len);
+  buffer_len += local_destination->GetIdentity().GetSignatureLen();
   LOG(debug)
     << "LeaseSet: local LeaseSet of " << tunnels.size() << " leases created";
+
+  m_Buffer.resize(buffer_len);
   ReadFromBuffer();
 }
 
@@ -116,17 +115,13 @@ void LeaseSet::Update(
     const std::uint8_t* buf,
     std::size_t len) {
   m_Leases.clear();
-  if (len > m_BufferLen) {
-    m_Buffer = std::make_unique<std::uint8_t[]>(len);
-  }
-  memcpy(m_Buffer.get(), buf, len);
-  m_BufferLen = len;
+  m_Buffer.assign(buf, buf + len);
   ReadFromBuffer();
 }
 
 void LeaseSet::ReadFromBuffer() {
-  std::size_t size = m_Identity.FromBuffer(m_Buffer.get(), m_BufferLen);
-  memcpy(m_EncryptionKey.data(), m_Buffer.get() + size, 256);
+  std::size_t size = m_Identity.FromBuffer(m_Buffer.data(), m_Buffer.size());
+  memcpy(m_EncryptionKey.data(), m_Buffer.data() + size, 256);
   size += 256;  // encryption key
   size += m_Identity.GetSigningPublicKeyLen();  // unused signing key
   std::uint8_t num = m_Buffer[size];
@@ -135,7 +130,7 @@ void LeaseSet::ReadFromBuffer() {
   if (!num)
     m_IsValid = false;
   // process leases
-  const std::uint8_t* leases = m_Buffer.get() + size;
+  const std::uint8_t* leases = m_Buffer.data() + size;
   for (int i = 0; i < num; i++) {
     Lease lease;
     lease.tunnel_gateway = leases;
@@ -153,7 +148,7 @@ void LeaseSet::ReadFromBuffer() {
     }
   }
   // verify
-  if (!m_Identity.Verify(m_Buffer.get(), leases - m_Buffer.get(), leases)) {
+  if (!m_Identity.Verify(m_Buffer.data(), leases - m_Buffer.data(), leases)) {
     LOG(warning) << "LeaseSet: verification failed";
     m_IsValid = false;
   }
