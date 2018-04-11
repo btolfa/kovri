@@ -124,13 +124,14 @@ void LeaseSet::ReadFromBuffer() {
   memcpy(m_EncryptionKey.data(), m_Buffer.data() + size, 256);
   size += 256;  // encryption key
   size += m_Identity.GetSigningPublicKeyLen();  // unused signing key
-  std::uint8_t num = m_Buffer[size];
+  const std::uint8_t num = m_Buffer[size];
   size++;  // num
   LOG(debug) << "LeaseSet: num=" << static_cast<int>(num);
   if (!num)
     m_IsValid = false;
   // process leases
   const std::uint8_t* leases = m_Buffer.data() + size;
+  m_Leases.reserve(num);
   for (int i = 0; i < num; i++) {
     Lease lease;
     lease.tunnel_gateway = leases;
