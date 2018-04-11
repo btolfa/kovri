@@ -100,7 +100,7 @@ class LeaseSet : public RoutingDestination {
     return m_Leases;
   }
 
-  const std::vector<Lease> GetNonExpiredLeases(
+  std::vector<Lease> GetNonExpiredLeases(
       bool with_threshold = true) const;
 
   bool HasExpiredLeases() const;

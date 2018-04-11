@@ -155,34 +155,39 @@ void LeaseSet::ReadFromBuffer() {
   }
 }
 
-const std::vector<Lease> LeaseSet::GetNonExpiredLeases(
+std::vector<Lease> LeaseSet::GetNonExpiredLeases(
     bool with_threshold) const {
-  auto ts = kovri::core::GetMillisecondsSinceEpoch();
+  const auto ts = kovri::core::GetMillisecondsSinceEpoch();
   std::vector<Lease> leases;
-  for (auto& it : m_Leases) {
-    auto end_date = it.end_date;
-    if (!with_threshold)
-      end_date -= kovri::core::TUNNEL_EXPIRATION_THRESHOLD * 1000;
-    if (ts < end_date)
-      leases.push_back(it);
-  }
+
+  const auto threshold = with_threshold ? 0 : kovri::core::TUNNEL_EXPIRATION_THRESHOLD * 1000;
+
+  std::copy_if(m_Leases.begin(), m_Leases.end(), std::back_inserter(leases),
+    [threshold, ts](const Lease& lease)
+  {
+    return ts < lease.end_date - threshold;
+  });
+
   return leases;
 }
 
 bool LeaseSet::HasExpiredLeases() const {
-  auto ts = kovri::core::GetMillisecondsSinceEpoch();
-  for (auto& it : m_Leases)
-    if (ts >= it.end_date)
-      return true;
-  return false;
+  const auto ts = kovri::core::GetMillisecondsSinceEpoch();
+
+  return std::any_of(m_Leases.begin(), m_Leases.end(), 
+    [ts](const Lease& lease)
+  {
+    return ts >= lease.end_date;
+  });
 }
 
 bool LeaseSet::HasNonExpiredLeases() const {
-  auto ts = kovri::core::GetMillisecondsSinceEpoch();
-  for (auto& it : m_Leases)
-    if (ts < it.end_date)
-      return true;
-  return false;
+  const auto ts = kovri::core::GetMillisecondsSinceEpoch();
+  return std::any_of(m_Leases.begin(), m_Leases.end(), 
+    [ts](const Lease& lease)
+  {
+    return ts < lease.end_date;
+  });
 }
 
 }  // namespace core
