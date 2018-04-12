@@ -202,13 +202,18 @@ if(WITH_STATIC)
   endif()
 endif()
 
-# Speed up MSVC build
-# https://blogs.msdn.microsoft.com/vcblog/2016/10/26/recommendations-to-speed-c-builds-in-visual-studio/
 if (MSVC) 
+  # Speed up MSVC build
+  # https://blogs.msdn.microsoft.com/vcblog/2016/10/26/recommendations-to-speed-c-builds-in-visual-studio/
   set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /DEBUG:fastlink") 
   if (NOT WITH_COTIRE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
   endif()
+
+  # Suppress warnings from external headers like boost, etc.
+  # https://blogs.msdn.microsoft.com/vcblog/2017/12/13/broken-warnings-theory/
+  set(supress_external_warnings /experimental:external /external:W0)
+  target_compile_options(kovri-private INTERFACE /wd4193 )
 endif()
 
 if(WITH_COTIRE)
@@ -246,6 +251,10 @@ if (NOT Boost_FOUND)
   message(FATAL_ERROR "Boost not found or requirement not satisfied. See building instructions.")
 endif()
 
+if (MSVC)
+  list(APPEND supress_external_warnings /external:I ${Boost_INCLUDE_DIRS})
+endif()
+
 # Fix OpenBSD build failure due to missing Boost::log_setup target
 if (NOT TARGET Boost::log_setup)
   get_property(BoostLogDependencies TARGET Boost::log PROPERTY INTERFACE_LINK_LIBRARIES)
@@ -273,6 +282,10 @@ if(WITH_CRYPTOPP)
   else()
     target_link_libraries(kovri-private INTERFACE CryptoPP::CryptoPP)
     target_compile_definitions(kovri-private INTERFACE WITH_CRYPTOPP)
+  endif()
+
+  if (MSVC)
+    list(APPEND supress_external_warnings /external:I ${CMAKE_CURRENT_SOURCE_DIR}/deps/cryptopp)
   endif()
 endif()
 
@@ -306,6 +319,10 @@ if(WITH_CPPNETLIB)
   set(CPP-NETLIB_STATIC_OPENSSL ${WITH_STATIC_DEPS} CACHE BOOL  "Build cpp-netlib using static OpenSSL") 
   set(CPP-NETLIB_STATIC_BOOST ${WITH_STATIC} CACHE BOOL "Build cpp-netlib using static Boost") 
   add_subdirectory(deps/cpp-netlib)
+
+  if (MSVC)
+    list(APPEND supress_external_warnings /external:I ${CMAKE_CURRENT_SOURCE_DIR}/deps/cpp-netlibs)
+  endif()
 endif()
 
 if(WITH_FUZZ_TESTS)
@@ -342,6 +359,8 @@ if (WITH_PYTHON)
   endif()
 endif()
 
+add_subdirectory(deps/gsl-lite)
+target_link_libraries(kovri-private INTERFACE gsl-lite)
 
 # Solve issue with as.exe fatal error - Object file has too many sections
 # http://stackoverflow.com/a/28372660
@@ -387,6 +406,12 @@ message(STATUS "---------------------------------------")
 
 # Handle paths nicely
 include(GNUInstallDirs)
+
+if (MSVC)
+  string (REPLACE ";" " " _TMP_STR "${supress_external_warnings}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_TMP_STR}")
+  unset(_TMP_STR)
+endif()
 
 add_subdirectory(src)
 
