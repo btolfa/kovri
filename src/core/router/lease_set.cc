@@ -82,7 +82,7 @@ LeaseSet::LeaseSet(
   m_Buffer[buffer_len] = tunnels.size();  // num leases
   buffer_len++;
   // leases
-  for (auto it : tunnels) {
+  for (auto& it : tunnels) {
     memcpy(m_Buffer.data() + buffer_len, it->GetNextIdentHash(), 32);
     buffer_len += 32;  // gateway id
     core::OutputByteStream::Write<std::uint32_t>(
