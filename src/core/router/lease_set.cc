@@ -35,6 +35,9 @@
 #include "core/router/lease_set.h"
 
 #include <cstring>
+#include <memory>
+#include <iterator>
+#include <algorithm>
 
 #include "core/crypto/rand.h"
 
@@ -43,6 +46,9 @@
 
 #include "core/util/log.h"
 #include "core/util/timestamp.h"
+#include "core/util/byte_stream.h"
+#include "tunnel/impl.h"
+
 
 namespace kovri {
 namespace core {

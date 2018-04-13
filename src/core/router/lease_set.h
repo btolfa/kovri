@@ -35,7 +35,7 @@
 
 #include <array>
 #include <cstdint>
-#include <memory>
+#include <cstddef>
 #include <vector>
 
 #include "core/router/identity.h"
