@@ -69,7 +69,7 @@ class LeaseSet : public RoutingDestination {
   explicit LeaseSet(
       const kovri::core::TunnelPool& pool);
 
-  ~LeaseSet() {}
+  ~LeaseSet() = default;
 
   void Update(
       const std::uint8_t* buf,
