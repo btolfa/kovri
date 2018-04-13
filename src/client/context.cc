@@ -146,9 +146,9 @@ kovri::core::PrivateKeys ClientContext::LoadPrivateKeys(
     file.seekg(0, std::ios::end);
     const std::size_t len = file.tellg();
     file.seekg(0, std::ios::beg);
-    std::unique_ptr<std::uint8_t[]> buf(std::make_unique<std::uint8_t[]>(len));
-    file.read(reinterpret_cast<char *>(buf.get()), len);
-    keys.FromBuffer(buf.get(), len);
+    std::vector<std::uint8_t> buf(len);
+    file.read(reinterpret_cast<char *>(buf.data()), len);
+    keys.FromBuffer(buf.data(), len);
     // Contingency: create associated address text file if the private keys
     // filename is swapped out with another set of keys with the same filename
     CreateBaseAddressTextFile(keys, filename);
@@ -172,9 +172,9 @@ kovri::core::PrivateKeys ClientContext::CreatePrivateKeys(
     throw std::runtime_error("ClientContext: could not open private keys for writing");
   auto keys = kovri::core::PrivateKeys::CreateRandomKeys();  // Generate default type
   std::size_t len = keys.GetFullLen();
-  std::unique_ptr<std::uint8_t[]> buf(std::make_unique<std::uint8_t[]>(len));
-  len = keys.ToBuffer(buf.get(), len);
-  file.write(reinterpret_cast<char *>(buf.get()), len);
+  std::vector<std::uint8_t> buf(len);
+  len = keys.ToBuffer(buf.data(), len);
+  file.write(reinterpret_cast<char *>(buf.data()), len);
   // Create associated address text file
   CreateBaseAddressTextFile(keys, filename);
   LOG(info)

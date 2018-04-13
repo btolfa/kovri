@@ -58,12 +58,12 @@ bool AddressBookStorage::GetAddress(
     return false;
   }
   file.seekg(0, std::ios::beg);
-  auto buf = std::make_unique<std::uint8_t[]>(len);
-  file.read(reinterpret_cast<char *>(buf.get()), len);
+  std::vector<std::uint8_t> buf(len);
+  file.read(reinterpret_cast<char *>(buf.data()), len);
   // For sanity, the validity of identity length is incumbent upon the parent caller.
   // For now, we only care about returning success for an open/available file
   // TODO(unassigned): triple check that this is the case
-  address.FromBuffer(buf.get(), len);
+  address.FromBuffer(buf.data(), len);
   return true;
 }
 

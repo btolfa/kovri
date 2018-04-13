@@ -530,12 +530,12 @@ BOOST_AUTO_TEST_CASE(SSUHeaderPlain) {
       &header_plain.at(0),
       &header_plain.at(16),
       2864434397);
-  auto buffer = std::make_unique<std::uint8_t[]>(header.GetSize());
-  SSUPacketBuilder builder(buffer.get(), header.GetSize());
+  std::vector<std::uint8_t> buffer(header.GetSize());
+  SSUPacketBuilder builder(buffer.data(), header.GetSize());
   builder.WriteHeader(&header);
   BOOST_CHECK_EQUAL_COLLECTIONS(
-    buffer.get(),
-    buffer.get() + header.GetSize(),
+    buffer.data(),
+    buffer.data() + header.GetSize(),
     header_plain.data(),
     header_plain.data() + header_plain.size());
 
@@ -552,12 +552,12 @@ BOOST_AUTO_TEST_CASE(SSUHeaderExtendedOptions) {
   std::array<std::uint8_t, 3> extended_data {{ 0x11, 0x12, 0x13 }};
   header.SetExtendedOptionsData(extended_data.data(), extended_data.size());
   header.SetExtendedOptions(true);
-  auto buffer = std::make_unique<std::uint8_t[]>(header.GetSize());
-  SSUPacketBuilder builder(buffer.get(), header.GetSize());
+  std::vector<std::uint8_t> buffer(header.GetSize());
+  SSUPacketBuilder builder(buffer.data(), header.GetSize());
   builder.WriteHeader(&header);
   BOOST_CHECK_EQUAL_COLLECTIONS(
-    buffer.get(),
-    buffer.get() + header.GetSize(),
+    buffer.data(),
+    buffer.data() + header.GetSize(),
     header_extended_options.data(),
     header_extended_options.data() + header_extended_options.size());
 }
@@ -568,12 +568,12 @@ BOOST_AUTO_TEST_CASE(SessionRequestPlain) {
   SSUSessionRequestPacket packet;
   packet.SetDhX(&session_request.at(0));
   packet.SetIPAddress(&session_request.at(257), 4);
-  auto buffer = std::make_unique<std::uint8_t[]>(packet.GetSize());
-  SSUPacketBuilder builder(buffer.get(), packet.GetSize());
+  std::vector<std::uint8_t> buffer(packet.GetSize());
+  SSUPacketBuilder builder(buffer.data(), packet.GetSize());
   builder.WriteSessionRequest(&packet);
   BOOST_CHECK_EQUAL_COLLECTIONS(
-    buffer.get(),
-    buffer.get() + packet.GetSize(),
+    buffer.data(),
+    buffer.data() + packet.GetSize(),
     session_request.data(),
     session_request.data() + session_request.size());
 }
@@ -588,12 +588,12 @@ BOOST_AUTO_TEST_CASE(SessionCreatedPacket) {
   packet.SetRelayTag(1234567890);
   packet.SetSignedOnTime(m_SignedOnTime);
   packet.SetSignature(&session_created.at(271), 40);
-  auto buffer = std::make_unique<std::uint8_t[]>(packet.GetSize());
-  SSUPacketBuilder builder(buffer.get(), packet.GetSize());
+  std::vector<std::uint8_t> buffer(packet.GetSize());
+  SSUPacketBuilder builder(buffer.data(), packet.GetSize());
   builder.WriteSessionCreated(&packet);
   BOOST_CHECK_EQUAL_COLLECTIONS(
-    buffer.get(),
-    buffer.get() + packet.GetSize(),
+    buffer.data(),
+    buffer.data() + packet.GetSize(),
     session_created.data(),
     session_created.data() + session_created.size());
 }
@@ -618,8 +618,8 @@ BOOST_AUTO_TEST_CASE(SessionConfirmedPlain)
       session_confirmed.size() - identity.GetSignatureLen();
   packet.SetSignature(&session_confirmed.at(sig_position));
   // Output to buffer
-  auto buffer = std::make_unique<std::uint8_t[]>(packet.GetSize());
-  core::SSUPacketBuilder builder(buffer.get(), packet.GetSize());
+  std::vector<std::uint8_t> buffer(packet.GetSize());
+  core::SSUPacketBuilder builder(buffer.data(), packet.GetSize());
   builder.WriteHeader(packet.GetHeader());
   builder.WritePacket(&packet);
   // Padding is randomized, so check everything before and after
@@ -628,13 +628,13 @@ BOOST_AUTO_TEST_CASE(SessionConfirmedPlain)
                                        + m_AliceIdentity.size()  // Identity
                                        + 4;  // SignedOnTime size
   BOOST_CHECK_EQUAL_COLLECTIONS(
-      buffer.get(),
-      buffer.get() + padding_position,
+      buffer.data(),
+      buffer.data() + padding_position,
       session_confirmed.data(),
       session_confirmed.data() + padding_position);
   BOOST_CHECK_EQUAL_COLLECTIONS(
-      buffer.get() + sig_position,
-      buffer.get() + packet.GetSize(),
+      buffer.data() + sig_position,
+      buffer.data() + packet.GetSize(),
       session_confirmed.data() + sig_position,
       session_confirmed.data() + session_confirmed.size());
 }

@@ -175,10 +175,9 @@ bool RouterInfoCommand::Impl(
               return false;
             }
           const std::size_t len = keys.GetFullLen();
-          std::unique_ptr<std::uint8_t[]> buf(
-              std::make_unique<std::uint8_t[]>(len));
-          keys.ToBuffer(buf.get(), len);
-          output_key.Write(buf.get(), len);
+          std::vector<std::uint8_t> buf(len); 
+          keys.ToBuffer(buf.data(), len);
+          output_key.Write(buf.data(), len);
           if (output_key.Fail())
             {
               LOG(error) << "routerinfo: Failed to write to file " << filename
