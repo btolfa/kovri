@@ -230,7 +230,7 @@ IdentityEx::IdentityEx(
   *this = other;
 }
 
-IdentityEx::~IdentityEx() {}
+IdentityEx::~IdentityEx() = default;
 
 IdentityEx& IdentityEx::operator=(const IdentityEx& other) {
   if (&other != this) {
