@@ -536,7 +536,7 @@ void IdentityEx::DropVerifier() {
  */
 
 PrivateKeys::PrivateKeys() : m_Signer(nullptr) {}
-PrivateKeys::~PrivateKeys() {}
+PrivateKeys::~PrivateKeys() = default;
 
 PrivateKeys& PrivateKeys::operator=(const Keys& keys) {
   m_Public = Identity(keys);
