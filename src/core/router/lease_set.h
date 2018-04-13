@@ -92,7 +92,8 @@ class LeaseSet : public RoutingDestination {
   }
 
   // implements RoutingDestination
-  const IdentHash& GetIdentHash() const {
+  const IdentHash& GetIdentHash() const override
+  {
     return m_Identity.GetIdentHash();
   }
 
@@ -107,11 +108,13 @@ class LeaseSet : public RoutingDestination {
 
   bool HasNonExpiredLeases() const;
 
-  const std::uint8_t* GetEncryptionPublicKey() const {
+  const std::uint8_t* GetEncryptionPublicKey() const override
+  {
     return m_EncryptionKey.data();
   }
 
-  bool IsDestination() const {
+  bool IsDestination() const override
+  {
     return true;
   }
 
