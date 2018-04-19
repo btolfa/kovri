@@ -206,7 +206,7 @@ if (MSVC)
   # Speed up MSVC build
   # https://blogs.msdn.microsoft.com/vcblog/2016/10/26/recommendations-to-speed-c-builds-in-visual-studio/
   set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /DEBUG:fastlink") 
-  if (NOT WITH_COTIRE)
+  if (NOT WITH_COTIRE AND MSVC_IDE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
   endif()
 
