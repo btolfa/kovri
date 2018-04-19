@@ -216,6 +216,12 @@ if (MSVC)
   target_compile_options(kovri-private INTERFACE /wd4193 )
 endif()
 
+# Solve issue with as.exe fatal error - Object file has too many sections
+# http://stackoverflow.com/a/28372660
+if (MINGW)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj")
+endif()
+
 if(WITH_COTIRE)
   set(COTIRE_PCH_MEMORY_SCALING_FACTOR "300")
   include(cotire OPTIONAL)
