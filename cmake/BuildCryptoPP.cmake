@@ -28,11 +28,13 @@ if (NOT MSVC)
   else()
     set(BUILD_CMD ${CMAKE_MAKE_PROGRAM})
   endif()
-  
+
   if(CMAKE_CXX_COMPILER_LAUNCHER)
     set(CCACHE_COMMAND "${CMAKE_CXX_COMPILER_LAUNCHER} ${CMAKE_CXX_COMPILER}")
     set(BUILD_CMD ${CMAKE_COMMAND} -E env CXX=${CCACHE_COMMAND} ${BUILD_CMD})
     unset(CCACHE_COMMAND)
+  else()
+    set(BUILD_CMD ${CMAKE_COMMAND} -E env CXX=${CMAKE_CXX_COMPILER} ${BUILD_CMD})
   endif()
 
   include(ProcessorCount)
