@@ -3,6 +3,8 @@ os: linux # Jobs are on Linux unless specified otherwise
 dist: trusty # Jobs are on Trusty unless specified otherwise
 sudo: false
 
+cache: ccache
+
 env:
   global:
     - DEPS_DIR=${TRAVIS_BUILD_DIR}/deps
@@ -107,6 +109,10 @@ matrix:
       compiler: clang
 
 install:
+  # Remove ccache wrappers from path. CMake handles them itself.
+  # https://stackoverflow.com/a/18925756 - sed script
+  - export PATH=$(echo ':'${PATH}':' | sed -e 's,:/usr/lib/ccache:,:,g' -e 's/^://' -e 's/:$//') 
+
   # override CXX set by Travis if needed
   - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi
   - ${CXX} --version
@@ -193,10 +199,11 @@ install:
       cmake -E chdir ${DEPS_DIR}/ccache ./configure --prefix=${DEPS_DIR}
       cmake -E chdir ${DEPS_DIR}/ccache make install -j2
     fi
+  - ccache --version
 
 before_script:
   - mkdir -p ${TRAVIS_BUILD_DIR}/build
-  - cmake -E chdir ${TRAVIS_BUILD_DIR}/build cmake -G Ninja -D BUILD_CRYPTOPP=ON -D WITH_COTIRE=ON -D WITH_KOVRI_UTIL=ON -D COTIRE_MAXIMUM_NUMBER_OF_UNITY_INCLUDES=-j1 -D CMAKE_VERBOSE_MAKEFILE=${VERBOSE:-OFF} -D CMAKE_BUILD_TYPE=${CONFIGURATION} -D WITH_OPTIMIZE=${ALL_OPTIONS} -D WITH_HARDENING=${ALL_OPTIONS} -D WITH_UPNP=${ALL_OPTIONS} -D WITH_STATIC=${WITH_STATIC} -D WITH_STATIC_DEPS=${WITH_STATIC} -D WITH_TESTS=${WITH_TESTS} ${TRAVIS_BUILD_DIR} 
+  - cmake -E chdir ${TRAVIS_BUILD_DIR}/build cmake -G Ninja -D BUILD_CRYPTOPP=ON -D WITH_COTIRE=ON -D WITH_KOVRI_UTIL=ON -D COTIRE_MAXIMUM_NUMBER_OF_UNITY_INCLUDES=-j1 -D CMAKE_CXX_COMPILER_LAUNCHER=ccache -D CMAKE_VERBOSE_MAKEFILE=${VERBOSE:-OFF} -D CMAKE_BUILD_TYPE=${CONFIGURATION} -D WITH_OPTIMIZE=${ALL_OPTIONS} -D WITH_HARDENING=${ALL_OPTIONS} -D WITH_UPNP=${ALL_OPTIONS} -D WITH_STATIC=${WITH_STATIC} -D WITH_STATIC_DEPS=${WITH_STATIC} -D WITH_TESTS=${WITH_TESTS} ${TRAVIS_BUILD_DIR} 
 
 script:
   - cmake --build ${TRAVIS_BUILD_DIR}/build --target all_unity -- -j1
