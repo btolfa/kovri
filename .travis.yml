@@ -8,6 +8,7 @@ cache: ccache
 env:
   global:
     - DEPS_DIR=${TRAVIS_BUILD_DIR}/deps
+    - CCACHE_SLOPPINESS=pch_defines,time_macros
 
 matrix:
   include:
